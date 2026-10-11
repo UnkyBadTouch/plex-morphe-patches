@@ -44,11 +44,11 @@ private data class Site(
 
 private val SITES = listOf(
     // useHasPlexPass: LoadConstString r1, 'on' ; JStrictEqual -> true-branch
-    Site(0x6F7193L, byteArrayOf(0x73, 0x01, 0x52, 0x5A), 0xBC, 0xBA),
+    Site(0x6F7193L, byteArrayOf(0x73, 0x01, 0x52, 0x5A), 0xBC.toByte(), 0xBA.toByte()),
     // getHasPlexPass: LoadConstString r1, 'on' ; JStrictEqual -> true-branch
-    Site(0x6F71F1L, byteArrayOf(0x73, 0x01, 0x52, 0x5A), 0xBC, 0xBA),
+    Site(0x6F71F1L, byteArrayOf(0x73, 0x01, 0x52, 0x5A), 0xBC.toByte(), 0xBA.toByte()),
     // useActiveSubscription: LoadConstTrue r7 ; JStrictEqual -> hasPlexPass=true
-    Site(0xA298F9L, byteArrayOf(0x78, 0x07), 0xBC, 0xBA),
+    Site(0xA298F9L, byteArrayOf(0x78, 0x07), 0xBC.toByte(), 0xBA.toByte()),
 )
 
 private const val HERMES_MAGIC = 0x1F1903C103BC1FC6UL
