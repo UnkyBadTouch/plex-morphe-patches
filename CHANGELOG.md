@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/UnkyBadTouch/plex-morphe-patches/compare/v1.1.1...v1.2.0) (2026-10-11)
+
+### ✨ New Features
+
+* Strip split-install constraints so patched output sideloads anywhere ([e65dc4c](https://github.com/UnkyBadTouch/plex-morphe-patches/commit/e65dc4caa862c5897c03e9ec28c8c25d370b2358))
+
 ## [1.1.1](https://github.com/UnkyBadTouch/plex-morphe-patches/compare/v1.1.0...v1.1.1) (2026-10-11)
 
 ### 🐛 Bug Fixes
