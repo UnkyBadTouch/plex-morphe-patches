@@ -12,7 +12,8 @@ object Constants {
         // Plex icon: dark charcoal background.
         appIconColor = 0x282A2D,
         targets = listOf(
-            AppTarget(version = "2026.20.0")
+            AppTarget(version = "2026.20.0"),
+            AppTarget(version = "2026.19.1")
         )
     )
 }

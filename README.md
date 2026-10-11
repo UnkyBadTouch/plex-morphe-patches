@@ -17,16 +17,19 @@ the in-app gating; it does not grant a real subscription.
 ## How it works
 
 Plex ships its entire UI as a Hermes (React Native) bytecode file:
-`assets/index.android.bundle` (bytecode version 96 for app 2026.20.0).
+`assets/index.android.bundle` (bytecode version 96; targets: 2026.20.0, 2026.19.1).
 
 Every Plex Pass check in the bundle funnels through three functions that each
 read a `plexPassOverride` debug flag:
 
-| Function                   | File offset | Compare at |
-|----------------------------|-------------|-----------|
-| `useHasPlexPass`           | `0x6f715f`  | `+0x34`   |
-| `getHasPlexPass`           | `0x6f71a9`  | `+0x48`   |
-| `useActiveSubscription`    | `0xa29850`  | `+0xa9`   |
+| Function                | 2026.20.0 | 2026.19.1 |
+|-------------------------|-----------|-----------|
+| `useHasPlexPass`        | `0x6f7193`| `0x6136d3`|
+| `getHasPlexPass`        | `0x6f71f1`| `0x613731`|
+| `useActiveSubscription` | `0xa298f9`| `0xa16f4b`|
+
+(offsets = file offset of the `JStrictEqual` opcode; the `'on'` string id
+differs per version, so the patch also asserts the preceding instruction bytes)
 
 Each does, in bytecode:
 
@@ -104,9 +107,16 @@ The three flipped bytes and the SHA-1 footer update can be verified with the
 Python [hermes-dec](https://github.com/P1sec/hermes-dec) toolchain:
 
 ```python
-import hashlib, struct
+import hashlib
+
+# (bundle_bytes, [(offset, ...)]) — pick the layout matching your app version
+layouts = {
+    "2026.20.0": [0x6F7193, 0x6F71F1, 0xA298F9],
+    "2026.19.1": [0x6136D3, 0x613731, 0xA16F4B],
+}
+
 d = bytearray(open("index.android.bundle", "rb").read())
-for off in (0x6F7193, 0x6F71F1, 0xA298F9):
+for off in layouts["2026.20.0"]:  # or layouts["2026.19.1"]
     assert d[off] == 0xBC
     d[off] = 0xBA
 d[-20:] = hashlib.sha1(d[:-20]).digest()

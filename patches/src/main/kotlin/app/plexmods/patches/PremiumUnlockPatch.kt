@@ -7,7 +7,7 @@ import java.security.MessageDigest
 
 /**
  * Plex ships its UI as a Hermes (React Native) bytecode bundle:
- * `assets/index.android.bundle` (bytecode version 96 for app 2026.20.0).
+ * `assets/index.android.bundle` (bytecode version 96 for app 2026.19.1/2026.20.0).
  *
  * Every Plex Pass check funnels through three functions that honour a
  * `plexPassOverride` debug flag with the same shape:
@@ -18,11 +18,11 @@ import java.security.MessageDigest
  * return <real subscription state>;
  * ```
  *
- * Sites (file offsets into the bundle):
- * - `useHasPlexPass`           @ 0x6f716b, compare at +0x34
- * - `getHasPlexPass`           @ 0x6f71b5, compare at +0x48
- * - `useActiveSubscription`    @ 0xa2985c, compare at +0xa9 (sets the
- *   `hasPlexPass` field of the returned object)
+ * Per app version, the compare sites (file offsets into the bundle):
+ * - `useHasPlexPass`           (JStrictEqual after LoadConstString r1, 'on')
+ * - `getHasPlexPass`           (same shape)
+ * - `useActiveSubscription`    (after LoadConstTrue r7; sets the `hasPlexPass`
+ *   field of the returned object)
  *
  * The release build strips `setPlexPassOverride` (it is a no-op returning
  * `undefined`), so the override is always `null` and all three fall through
@@ -40,15 +40,40 @@ private data class Site(
     val preceding: ByteArray,
     val from: Byte,
     val to: Byte,
-)
+) {
+    fun matches(data: ByteArray): Boolean {
+        val at = opcodeOffset.toInt()
+        if (at !in preceding.size until data.size || data[at] != from) return false
+        for ((i, b) in preceding.withIndex()) {
+            if (data[at - preceding.size + i] != b) return false
+        }
+        return true
+    }
+}
 
-private val SITES = listOf(
-    // useHasPlexPass: LoadConstString r1, 'on' ; JStrictEqual -> true-branch
-    Site(0x6F7193L, byteArrayOf(0x73, 0x01, 0x52, 0x5A), 0xBC.toByte(), 0xBA.toByte()),
-    // getHasPlexPass: LoadConstString r1, 'on' ; JStrictEqual -> true-branch
-    Site(0x6F71F1L, byteArrayOf(0x73, 0x01, 0x52, 0x5A), 0xBC.toByte(), 0xBA.toByte()),
-    // useActiveSubscription: LoadConstTrue r7 ; JStrictEqual -> hasPlexPass=true
-    Site(0xA298F9L, byteArrayOf(0x78, 0x07), 0xBC.toByte(), 0xBA.toByte()),
+private val JSTRICTEQ = 0xBC.toByte()
+private val JNOTEQUAL = 0xBA.toByte()
+
+/** One entry per known app version; the first full match wins. */
+private val SITE_SETS = listOf(
+    // Plex 2026.20.0
+    listOf(
+        // useHasPlexPass @ 0x6f715f: LoadConstString r1, 'on' ; JStrictEqual -> true-branch
+        Site(0x6F7193L, byteArrayOf(0x73, 0x01, 0x52, 0x5A), JSTRICTEQ, JNOTEQUAL),
+        // getHasPlexPass @ 0x6f71a9: same shape
+        Site(0x6F71F1L, byteArrayOf(0x73, 0x01, 0x52, 0x5A), JSTRICTEQ, JNOTEQUAL),
+        // useActiveSubscription @ 0xa29850: LoadConstTrue r7 ; JStrictEqual -> hasPlexPass=true
+        Site(0xA298F9L, byteArrayOf(0x78, 0x07), JSTRICTEQ, JNOTEQUAL),
+    ),
+    // Plex 2026.19.1
+    listOf(
+        // useHasPlexPass @ 0x61369f ('on' is string_id 23266 here)
+        Site(0x6136D3L, byteArrayOf(0x73, 0x01, 0xE2, 0x5A), JSTRICTEQ, JNOTEQUAL),
+        // getHasPlexPass @ 0x6136e9
+        Site(0x613731L, byteArrayOf(0x73, 0x01, 0xE2, 0x5A), JSTRICTEQ, JNOTEQUAL),
+        // useActiveSubscription @ 0xa16ea2
+        Site(0xA16F4BL, byteArrayOf(0x78, 0x07), JSTRICTEQ, JNOTEQUAL),
+    ),
 )
 
 private const val HERMES_MAGIC = 0x1F1903C103BC1FC6UL
@@ -77,19 +102,11 @@ val premiumUnlockPatch = rawResourcePatch(
             )
         }
 
-        for (site in SITES) {
-            val at = site.opcodeOffset.toInt()
-            for ((i, b) in site.preceding.withIndex()) {
-                if (data[at - site.preceding.size + i] != b) {
-                    throw PatchException(
-                        "Unexpected bytecode at 0x${(at - site.preceding.size + i).toString(16)}"
-                    )
-                }
-            }
-            if (data[at] != site.from) {
-                throw PatchException("Expected 0x${site.from.toInt().and(0xff).toString(16)} at 0x${at.toString(16)}")
-            }
-            data[at] = site.to
+        val sites = SITE_SETS.firstOrNull { set -> set.all { site -> site.matches(data) } }
+            ?: throw PatchException("No known premium-check layout matches this bundle")
+
+        for (site in sites) {
+            data[site.opcodeOffset.toInt()] = site.to
         }
 
         val sha = MessageDigest.getInstance("SHA-1")
