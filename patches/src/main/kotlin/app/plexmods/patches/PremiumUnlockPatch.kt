@@ -68,9 +68,9 @@ private val SITE_SETS = listOf(
     // Plex 2026.19.1
     listOf(
         // useHasPlexPass @ 0x61369f ('on' is string_id 23266 here)
-        Site(0x6136D3L, byteArrayOf(0x73, 0x01, 0xE2, 0x5A), JSTRICTEQ, JNOTEQUAL),
+        Site(0x6136D3L, byteArrayOf(0x73, 0x01, 0xE2.toByte(), 0x5A), JSTRICTEQ, JNOTEQUAL),
         // getHasPlexPass @ 0x6136e9
-        Site(0x613731L, byteArrayOf(0x73, 0x01, 0xE2, 0x5A), JSTRICTEQ, JNOTEQUAL),
+        Site(0x613731L, byteArrayOf(0x73, 0x01, 0xE2.toByte(), 0x5A), JSTRICTEQ, JNOTEQUAL),
         // useActiveSubscription @ 0xa16ea2
         Site(0xA16F4BL, byteArrayOf(0x78, 0x07), JSTRICTEQ, JNOTEQUAL),
     ),
