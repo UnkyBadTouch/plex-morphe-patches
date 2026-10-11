@@ -55,10 +55,9 @@ update that changes the bytecode layout.
 
 ## Patches list
 
-- **Premium unlock** (default on): flips the three `JStrictEqual` sites described
-  above. Unlocks: auto Skip Intros (set *Settings → Playback → Skip Intros* to
-  *Automatic* once), Downloads Queue UI, Plex Pass badges/upsell suppression,
-  and any other UI gated by `hasPlexPass`.
+<!-- PATCHES_START EXPANDED -->
+
+<!-- PATCHES_END -->
 
 ## 🚀 Getting development started
 
