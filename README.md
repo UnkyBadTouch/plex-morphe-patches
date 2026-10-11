@@ -70,6 +70,12 @@ the override is never `'on'`, the "has Plex Pass" path is taken unconditionally.
 After the flips the patch recomputes the bundle's trailing SHA-1 footer (the
 Hermes loader verifies it) and writes the modified file back.
 
+The patch also cleans the decoded `AndroidManifest.xml` so the patched output
+sideloads on any device: removes `requiredSplitTypes`/`splitTypes` (empty
+string still counts as a required type → `INSTALL_FAILED_MISSING_SPLIT`) and
+sets `extractNativeLibs="true"` (Plex ships `false` for unextracted split
+libs → `INSTALL_FAILED_INVALID_APK` when the output is installed standalone).
+
 The patch validates the Hermes magic (`0x1F1903C103BC1FC6`) and bytecode
 version (`96`) before touching anything, and asserts the exact bytes at each
 site, so it fails loudly (rather than corrupting the file) on a future app

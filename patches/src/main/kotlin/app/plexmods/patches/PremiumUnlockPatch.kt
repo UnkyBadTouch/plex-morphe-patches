@@ -82,7 +82,7 @@ private const val HERMES_VERSION = 96L
 @Suppress("unused")
 val premiumUnlockPatch = rawResourcePatch(
     name = "Premium unlock",
-    description = "Unlocks Plex Pass features client-side (auto Skip Intros, downloads, ...).",
+    description = "Unlocks Plex Pass features client-side (auto Skip Intros, downloads, ...) and makes the patched output sideload-installable on any device (strips split-install constraints).",
     default = true,
 ) {
     compatibleWith(COMPATIBILITY_PLEX)
@@ -114,6 +114,21 @@ val premiumUnlockPatch = rawResourcePatch(
         System.arraycopy(sha, 0, data, data.size - 20, 20)
 
         bundle.writeBytes(data)
+
+        // Plex's base manifest carries split-install constraints that break
+        // sideload installs of the patched output (INSTALL_FAILED_MISSING_SPLIT /
+        // INVALID_APK on devices that don't match the patching phone's ABI):
+        // - requiredSplitTypes/splitTypes: PMS demands config splits that a
+        //   standalone install doesn't have (empty string is not "none" — it
+        //   counts as one unnamed type, so the attributes must be removed).
+        // - extractNativeLibs=false: only valid for unextracted, page-aligned
+        //   split libs; flip so installd extracts ours instead of failing.
+        val manifest = get("AndroidManifest.xml")
+        val xml = manifest.readText()
+            .replace(Regex("""\s+android:requiredSplitTypes="[^"]*""""), "")
+            .replace(Regex("""\s+android:splitTypes="[^"]*""""), "")
+            .replace("""android:extractNativeLibs="false"""", """android:extractNativeLibs="true"""")
+        manifest.writeText(xml)
     }
 }
 
