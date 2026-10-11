@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-10-11T20:54:54",
-  "description": "## 1.0.0 (2026-10-11)\n\n### 🐛 Bug Fixes\n\n* Explicit Byte conversion for opcode literals ([81a879a](https://github.com/UnkyBadTouch/plex-morphe-patches/commit/81a879adbd902c08c8830f01bbd73da09094c46b))\n* Restore patches-list markers in README ([f8ef850](https://github.com/UnkyBadTouch/plex-morphe-patches/commit/f8ef8501e99a75a731f3e09e385d7a1b0bc2a1dd))\n\n### ✨ New Features\n\n* Premium unlock patch for Plex 2026.20.0 ([a018067](https://github.com/UnkyBadTouch/plex-morphe-patches/commit/a018067f7fc80639a6895e807d4aa5b33012d250))",
-  "download_url": "https://github.com/UnkyBadTouch/plex-morphe-patches/releases/download/v1.0.0/patches-1.0.0.mpp",
+  "created_at": "2026-10-11T21:12:40",
+  "description": "## [1.1.0](https://github.com/UnkyBadTouch/plex-morphe-patches/compare/v1.0.0...v1.1.0) (2026-10-11)\n\n### 🐛 Bug Fixes\n\n* 0xE2.toByte() for byteArrayOf (value out of Byte range) ([182742e](https://github.com/UnkyBadTouch/plex-morphe-patches/commit/182742e00a8b5f5a311a4f24096e1e0c60f531ab))\n\n### ✨ New Features\n\n* Add Plex 2026.19.1 support to Premium unlock patch ([8b69362](https://github.com/UnkyBadTouch/plex-morphe-patches/commit/8b69362f86a5281764234cedd76633d7242f4bba))",
+  "download_url": "https://github.com/UnkyBadTouch/plex-morphe-patches/releases/download/v1.1.0/patches-1.1.0.mpp",
   "signature_download_url": "",
-  "version": "1.0.0"
+  "version": "1.1.0"
 }
