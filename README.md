@@ -14,6 +14,23 @@ account has a Plex Pass.
 media-server features (hardware transcoding, DVR, etc.). This patch only removes
 the in-app gating; it does not grant a real subscription.
 
+## ✨ Use
+
+Add this repo as a patch source in the Morphe app:
+
+**Morphe → Settings → Patches → Add source** → paste:
+
+```
+https://github.com/UnkyBadTouch/plex-morphe-patches
+```
+
+Then patch Plex (`com.plexapp.android`) with the **Premium unlock** patch
+(enabled by default). Supported: `2026.20.0`, `2026.19.1`.
+
+No Morphe app? Grab the `.mpp` directly from
+[releases](https://github.com/UnkyBadTouch/plex-morphe-patches/releases)
+and load it as a local patch file.
+
 ## How it works
 
 Plex ships its entire UI as a Hermes (React Native) bytecode file:
