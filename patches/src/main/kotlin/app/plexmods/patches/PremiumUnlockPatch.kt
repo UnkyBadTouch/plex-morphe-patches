@@ -110,7 +110,7 @@ val premiumUnlockPatch = rawResourcePatch(
         }
 
         val sha = MessageDigest.getInstance("SHA-1")
-            .digest(data, 0, data.size - 20)
+            .digest(data.copyOfRange(0, data.size - 20))
         System.arraycopy(sha, 0, data, data.size - 20, 20)
 
         bundle.writeBytes(data)
