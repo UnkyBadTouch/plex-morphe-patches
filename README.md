@@ -1,91 +1,107 @@
-# 👋🧩 Morphe Patches template
+# Plex Morphe Patches
 
-Template repository for Morphe Patches.
+Morphe patch bundle for the Plex Android app (`com.plexapp.android`).
 
-## ❓ About
+## About
 
-Patches for apps I like.
+Client-side Plex Pass unlock. Plex gates most "premium" features (auto Skip
+Intros, Downloads Queue, Plex Pass badges/upsell suppression) behind a single
+boolean: `hasPlexPass`. This patch flips that boolean to `true` inside the
+React Native Hermes bytecode bundle, so the app behaves as if the signed-in
+account has a Plex Pass.
 
-<!-- TODO: Update this about section with a brief introduction/summary about this repo and what it offers. -->
+**Scope:** client-side only. Plex Pass entitlements are enforced server-side for
+media-server features (hardware transcoding, DVR, etc.). This patch only removes
+the in-app gating; it does not grant a real subscription.
 
-### How to use these patches
+## How it works
 
-Click here to add these patches to Morphe: https://morphe.software/add-source?github=xyz-user/xyz-patches
+Plex ships its entire UI as a Hermes (React Native) bytecode file:
+`assets/index.android.bundle` (bytecode version 96 for app 2026.20.0).
 
-## 🩹 Patches list
+Every Plex Pass check in the bundle funnels through three functions that each
+read a `plexPassOverride` debug flag:
 
-<!-- PATCHES_START EXPANDED -->
+| Function                   | File offset | Compare at |
+|----------------------------|-------------|-----------|
+| `useHasPlexPass`           | `0x6f715f`  | `+0x34`   |
+| `getHasPlexPass`           | `0x6f71a9`  | `+0x48`   |
+| `useActiveSubscription`    | `0xa29850`  | `+0xa9`   |
 
-<!-- Do not modify this section by hand. The patch list is generated when release.yml creates a new release.
-     
-     If you wish for the patches list to be collapsed, then remove the word 'EXPANDED' from the comment tag above.
+Each does, in bytecode:
 
-     If you wish to manually keep this list updated then remove the PATCHES_START and PATCHES_END 
-     comment blocks entirely. -->
+```
+if (override === 'on')  return true;    // "has Plex Pass" path
+if (override === 'off') return false;
+return <real subscription state>;       // falls through to account data
+```
 
-#### A list of your patches will automatically be shown here after your first patches release is created.
+The release build strips `setPlexPassOverride` (replaced with a no-op returning
+`undefined`), so the override can never be `'on'`; it is always `null` and all
+three functions fall through to real account state.
 
-&nbsp;
+Each compare is a single 4-byte `JStrictEqual` instruction (opcode `0xbc`).
+The patch inverts it to `JNotEqual` (opcode `0xba`) — one byte per site, no
+layout change — so the condition is true for every value except `'on'`. Since
+the override is never `'on'`, the "has Plex Pass" path is taken unconditionally.
+
+After the flips the patch recomputes the bundle's trailing SHA-1 footer (the
+Hermes loader verifies it) and writes the modified file back.
+
+The patch validates the Hermes magic (`0x1F1903C103BC1FC6`) and bytecode
+version (`96`) before touching anything, and asserts the exact bytes at each
+site, so it fails loudly (rather than corrupting the file) on a future app
+update that changes the bytecode layout.
+
+## Patches list
+
+- **Premium unlock** (default on): flips the three `JStrictEqual` sites described
+  above. Unlocks: auto Skip Intros (set *Settings → Playback → Skip Intros* to
+  *Automatic* once), Downloads Queue UI, Plex Pass badges/upsell suppression,
+  and any other UI gated by `hasPlexPass`.
 
 ## 🚀 Getting development started
 
-To start using this template, follow these steps:
-
 1. [Setup](https://github.com/MorpheApp/morphe-documentation/blob/main/docs/morphe-development/README.md) your development environment including adding a GitHub PAT as described [here](https://github.com/MorpheApp/morphe-patcher/blob/main/docs/2_1_setup.md#-prepare-the-environment).
-2. [Create a new repository using this template](https://github.com/new?template_name=morphe-patches-template&template_owner=MorpheApp). Select create a new repository, and **enable 'Include all branches'** 
-3. Enable "Allow GitHub Actions to create and approve pull requests" in your repo Settings > Actions > General > Workflow permissions
-4. Update the [build.gradle.kts](patches/build.gradle.kts) file (Specifically, the 
-   [group of the project](patches/build.gradle.kts#L1), and the [About](patches/build.gradle.kts#L6-L11))
-5. Update the [README.md](README.md) file to be specific of your repo, and update the links in the [issue templates](.github/ISSUE_TEMPLATE).
-6. Choose a name for your patches project. Keep in mind you must use a name that does not 
-   imply authorship by the Morphe open source project. If unsure, then simply name these
-   patches after yourself ("UserXYZ Morphe patches"). See the [NOTICE](NOTICE) for details. 
-7. (Optional): Add `patches-bundle.png` to the project if you want a custom icon to show in
-   Morphe Manager instead of your GitHub profile avatar.
-
-🎉 You are now ready to start creating patches!
+2. Enable "Allow GitHub Actions to create and approve pull requests" in your repo Settings > Actions > General > Workflow permissions.
 
 ## 🧑‍💻 Dev usage
 
-To develop and release your Patches using this template:
-
 - **Make all changes to the `dev` branch.**
-- For local development work build your patches using the gradle task `./gradlew buildAndroid` to generate the mpp file found in `patches/build/libs/patches-*.mpp`. Apply your patches locally using Morphe Desktop tool like any other patch bundle.
-- Always use [Semantic commit](https://kapeli.com/cheat_sheets/Semantic_Commits.docset/Contents/Resources/Documents/index) messages for commits. To keep it simple use only 3 commit message types: 
-  - `feat: Added a new feature`
-  - `fix: Some problem now fixed`
-  - `chore: Random change you do not want in the user facing changelog`
-- Commits of `fix:` and `feat:` will automatically generate new pre-releases and `chore:` will not create a new release.
-- Users can apply your dev branch releases by enabling `pre-release` in Morphe Manager patch sources.
-- When your dev branch is ready, and you want a stable release, merge dev branch to main (do not squash, and only merge).
-- **Always use semantic release (release.yml)**. Do not manually upload or create releases by hand
-  because many files must be updated and release.yml handles everything.
+- Build locally with `./gradlew buildAndroid`; the `.mpp` bundle lands in `patches/build/libs/patches-*.mpp`.
+- Apply it locally with [Morphe Desktop](https://github.com/MorpheApp/morphe-desktop).
+- Always use [Semantic commit](https://kapeli.com/cheat_sheets/Semantic_Commits.docset/Contents/Resources/Documents/index) messages:
+  - `feat: ...` / `fix: ...` — generates a pre-release automatically.
+  - `chore: ...` — no release.
+- Merge `dev` → `main` (no squash) for a stable release. `release.yml` handles everything; do not create releases by hand.
 
-## 🤓 Tips
-- See the [patcher documentation](https://github.com/MorpheApp/morphe-patcher/blob/main/docs/1_patcher_intro.md) for more examples of creating patches and fingerprints.
-- Do not use AI to create new release scripts. The `release.yml` here already handles everything.
-  If you need something custom with your releases then modify the existing `release.yml`
-  and `.releaserc` instead of writing everything new from scratch.
-- Do not manually edit or manually commit any generated files such as: `patches-list.json`,
-  `patches-bundle.json`, `CHANGELOG.md`.  These files will be automatically updated by `release.yml`.
-- Do not force push any semantic release commits as that will break all future releases.
-  If you need to fix a broken release, it's always easiest to create a new release instead of 
-  fixing an existing release.
+### Building locally
 
+```
+./gradlew buildAndroid
+```
 
-<!-- The patches end tag is intentionally placed here so the first release will clean up 
-     this readme of all developer instructions above. -->
-<!-- PATCHES_END -->
+Output: `patches/build/libs/patches-*.mpp`. Apply with Morphe Desktop like any
+other patch bundle.
 
-### 🛠️ Building locally
+### Manual verification (no Morphe toolchain)
 
-- Run `./gradlew buildAndroid`
-- The built patches .mpp file is found in `patches/build/libs/patches-*.mpp`
-- Patch the mpp file using [Morphe-Desktop](https://github.com/MorpheApp/morphe-desktop)
-  like any other patch bundle.
+The three flipped bytes and the SHA-1 footer update can be verified with the
+Python [hermes-dec](https://github.com/P1sec/hermes-dec) toolchain:
 
-See the [Morphe documentation](https://github.com/MorpheApp/morphe-documentation) for more information.
+```python
+import hashlib, struct
+d = bytearray(open("index.android.bundle", "rb").read())
+for off in (0x6F7193, 0x6F71F1, 0xA298F9):
+    assert d[off] == 0xBC
+    d[off] = 0xBA
+d[-20:] = hashlib.sha1(d[:-20]).digest()
+open("index.android.bundle", "wb").write(d)
+```
+
+Re-disassemble with `hbc-disassembler` and confirm the three sites now read
+`JNotEqual` instead of `JStrictEqual`.
 
 ## 📜 License
 
-UserXYZ Patches are licensed under the [GNU General Public License v3.0](LICENSE)
+GPLv3. See [LICENSE](LICENSE).

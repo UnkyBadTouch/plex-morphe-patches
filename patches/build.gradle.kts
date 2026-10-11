@@ -1,12 +1,11 @@
-group = "app.template"
+group = "app.plexmods"
 
 patches {
-    // TODO: Update this section with your project details.
     about {
-        name = "UserXYZ Patches"
-        description = "Patches for apps I like"
-        source = "git@github.com:UserXYZ/morphe-patches.git"
-        author = "Awesome dev"
+        name = "Plex Mods"
+        description = "Client-side tweaks for the Plex Android app (premium toggle)."
+        source = "git@github.com:UnkyBadTouch/plex-morphe-patches.git"
+        author = "UnkyBadTouch"
         contact = "na"
         website = "na"
         license = "GPLv3"
