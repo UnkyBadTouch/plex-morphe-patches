@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-10-11T21:12:40",
-  "description": "## [1.1.0](https://github.com/UnkyBadTouch/plex-morphe-patches/compare/v1.0.0...v1.1.0) (2026-10-11)\n\n### 🐛 Bug Fixes\n\n* 0xE2.toByte() for byteArrayOf (value out of Byte range) ([182742e](https://github.com/UnkyBadTouch/plex-morphe-patches/commit/182742e00a8b5f5a311a4f24096e1e0c60f531ab))\n\n### ✨ New Features\n\n* Add Plex 2026.19.1 support to Premium unlock patch ([8b69362](https://github.com/UnkyBadTouch/plex-morphe-patches/commit/8b69362f86a5281764234cedd76633d7242f4bba))",
-  "download_url": "https://github.com/UnkyBadTouch/plex-morphe-patches/releases/download/v1.1.0/patches-1.1.0.mpp",
+  "created_at": "2026-10-11T21:32:45",
+  "description": "## [1.1.1](https://github.com/UnkyBadTouch/plex-morphe-patches/compare/v1.1.0...v1.1.1) (2026-10-11)\n\n### 🐛 Bug Fixes\n\n* Use byte[] digest overload for SHA-1 footer recompute ([e92342d](https://github.com/UnkyBadTouch/plex-morphe-patches/commit/e92342d8db599b65c37e157d55ebe1cd6ae50a8e))",
+  "download_url": "https://github.com/UnkyBadTouch/plex-morphe-patches/releases/download/v1.1.1/patches-1.1.1.mpp",
   "signature_download_url": "",
-  "version": "1.1.0"
+  "version": "1.1.1"
 }

@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/UnkyBadTouch/plex-morphe-patches/compare/v1.1.0...v1.1.1) (2026-10-11)
+
+### 🐛 Bug Fixes
+
+* Use byte[] digest overload for SHA-1 footer recompute ([e92342d](https://github.com/UnkyBadTouch/plex-morphe-patches/commit/e92342d8db599b65c37e157d55ebe1cd6ae50a8e))
+
 ## [1.1.0](https://github.com/UnkyBadTouch/plex-morphe-patches/compare/v1.0.0...v1.1.0) (2026-10-11)
 
 ### 🐛 Bug Fixes
