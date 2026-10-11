@@ -1,5 +1,7 @@
 # Plex Morphe Patches
 
+**[➕ Add in Morphe](https://github.com/UnkyBadTouch/plex-morphe-patches)** · [⬇️ Download .mpp](https://github.com/UnkyBadTouch/plex-morphe-patches/releases/latest)
+
 Morphe patch bundle for the Plex Android app (`com.plexapp.android`).
 
 ## About
